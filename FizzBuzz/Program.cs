@@ -1,48 +1,182 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using System.Drawing;
-using System.Runtime.CompilerServices;
+using System.Collections;
 
-Dictionary<int, string> rules = new Dictionary<int, string>();
+Rules rules = new FizzBuzzRulesBuilder()
+    .AddRule(3, outputArray =>
+    {
+        outputArray.Add("Fizz");
+        return outputArray;
+    })
+    .AddRule(5, outputArray =>
+    {
+        outputArray.Add("Buzz");
+        return outputArray;
+    })
+    .AddRule(7, outputArray =>
+    {
+        outputArray.Add("Bang");
+        return outputArray;
+    })
+    .AddRule(11, outputArray =>
+    {
+        outputArray.Clear();
+        outputArray.Add("Bong");
+        return outputArray;
+    })
+    .AddRule(13, outputArray =>
+    {
+        var newArray = new ArrayList();
 
-int[] priorityRules =
-{
-    11, // Bong
-    3 * 5 * 7, // FizzBuzzBang
-    3 * 7, // FizzBang
-    5 * 7, // BuzzBang
-    3 * 5, // FizzBuzz
-    7, // Bang
-    5, // Buzz
-    3, // Fizz
-};
+        foreach (string word in outputArray)
+        {
+        
+        }
+    
+        return newArray;
+    })
+    .Create();
 
-rules.Add(3 * 5 * 7, "FizzBuzzBang");
-rules.Add(3 * 7, "FizzBang");
-rules.Add(5 * 7, "BuzzBang");
-rules.Add(3 * 5, "FizzBuzz");
-rules.Add(11, "Bong");
-rules.Add(7, "Bang");
-rules.Add(5, "Buzz");
-rules.Add(3, "Fizz");
 
 for (int i = 1; i < 101; i++)
 {
-    bool emptyOutput = true;
+    var outputArray = new ArrayList();
 
-    foreach (int ruleValue in priorityRules)
+    foreach (Rule rule in rules)
     {
-        if (i % ruleValue == 0)
-        {
-            string output = rules[ruleValue]; // no need to protect against bad inputs obviously
-            Console.Write(output);
-            emptyOutput = false;
-            break;
-        }
+        rule.ApplyRule(i, outputArray);
     }
-    
-    if (emptyOutput) Console.Write(i);
-    
+
+    if (outputArray.Count == 0)
+    {
+        Console.WriteLine(i);
+        continue;
+    }
+
+    foreach (var output in outputArray)
+    {
+        Console.Write(output);
+    }
     Console.WriteLine();
 }
 
+public class Rule
+{
+    private Func<ArrayList, ArrayList> _RuleMethod;
+    private int _value;
+    public Rule(int value, Func<ArrayList, ArrayList> RuleMethod)
+    {
+        _value = value;
+        _RuleMethod = RuleMethod;
+    }
+
+    public void ApplyRule(int valueToCheck, ArrayList outputArray)
+    {
+        if (valueToCheck % _value == 0)
+        {
+            outputArray = _RuleMethod(outputArray);
+        }
+    }
+}
+
+// Enumerator code from:
+// https://learn.microsoft.com/en-us/dotnet/api/system.collections.ienumerable?view=net-7.0
+
+public class Rules : IEnumerable
+{
+    private Rule[] _rules;
+    public Rules(Rule[] rules)
+    {
+        _rules = new Rule[rules.Length];
+        for (int i = 0; i < rules.Length; i++)
+        {
+            _rules[i] = rules[i];
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return (IEnumerator)GetEnumerator();
+    }
+
+    public RulesEnum GetEnumerator()
+    {
+        return new RulesEnum(_rules);
+    }
+}
+
+public class RulesEnum : IEnumerator
+{
+    public Rule[] _rules;
+
+    private int position = -1;
+
+    public RulesEnum(Rule[] rules)
+    {
+        _rules = rules;
+    }
+
+    public bool MoveNext()
+    {
+        position++;
+        return (position < _rules.Length);
+    }
+
+    public void Reset()
+    {
+        position = -1;
+    }
+
+    object IEnumerator.Current
+    {
+        get
+        {
+            return Current;
+        }
+    }
+
+    public Rule Current
+    {
+        get
+        {
+            try
+            {
+                return _rules[position];
+            }
+            catch (IndexOutOfRangeException)
+            {
+                throw new InvalidOperationException();
+            }
+        }
+    }
+}
+
+public class FizzBuzzRulesBuilder
+{
+    private Rule[] _rules;
+    private int _size = 0;
+
+    public FizzBuzzRulesBuilder AddRule(int value, Func<ArrayList, ArrayList> method)
+    {
+        var rule = new Rule(value, method);
+        AddRuleToEnd(rule);
+        return this;
+    }
+
+    private void AddRuleToEnd(Rule newRule)
+    {
+        Rule[] _newRules = new Rule[_size + 1];
+        for (int i = 0; i < _size; i++)
+        {
+            _newRules[i] = _rules[i];
+        }
+        _newRules[_size] = newRule;
+        _rules = _newRules;
+        _size++;
+    }
+
+    public Rules Create()
+    {
+        return new Rules(_rules);
+    }
+}
