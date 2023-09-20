@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System.Collections;
+using System.Reflection.Metadata;
 
 Rules rules = new FizzBuzzRulesBuilder()
     .AddRule(3, outputArray =>
@@ -28,15 +29,37 @@ Rules rules = new FizzBuzzRulesBuilder()
     {
         var newArray = new ArrayList();
 
+        if (outputArray.Count == 0)
+        {
+            newArray.Add("Fezz");
+            return newArray;
+        }
+
+        bool hasAddedFezz = false;
         foreach (string word in outputArray)
         {
-        
+            if (hasAddedFezz)
+            {
+                newArray.Add(word);
+                continue;
+            }
+            
+            if (word.StartsWith("B"))
+            {
+                newArray.Add("Fezz");
+                newArray.Add(word);
+                hasAddedFezz = true;
+            }
         }
     
         return newArray;
     })
+    .AddRule(17, outputArray =>
+    {
+        outputArray.Reverse();
+        return outputArray;
+    })
     .Create();
-
 
 for (int i = 1; i < 101; i++)
 {
