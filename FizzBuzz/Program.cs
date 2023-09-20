@@ -2,15 +2,26 @@
 
 using System.Runtime.CompilerServices;
 
+Dictionary<int, string> rules = new Dictionary<int, string>();
+
+rules.Add(3, "Fizz");
+rules.Add(5, "Buzz");
+
 for (int i = 1; i < 101; i++)
 {
-    bool isFizz = i % 3 == 0;
-    bool isBuzz = i % 5 == 0;
+    bool emptyOutput = true;
+
+    foreach (KeyValuePair<int, string> rule in rules)
+    {
+        if (i % rule.Key == 0)
+        {
+            Console.Write(rule.Value);
+            emptyOutput = false;
+        }
+    }
     
-    int result = Convert.ToInt32(isFizz) + Convert.ToInt32(isBuzz);
+    if (emptyOutput) Console.Write(i);
     
-    if (result == 2) Console.WriteLine("FizzBuzz");
-    else if (isFizz) Console.WriteLine("Fizz");
-    else if (isBuzz) Console.WriteLine("Buzz");
-    else Console.WriteLine(i);
+    Console.WriteLine();
 }
+
